@@ -1,15 +1,15 @@
-#GnuBook {
+.GnuBook {
  border:1px solid black;
  position:absolute;
 }
 
-#GBtoolbar {
+.GBtoolbar {
     height:25px;
     width:100%;
     background-color: rgb(241, 239, 237);    
 }
 
-#GBcontainer {
+.GBcontainer {
     /*height:95%;*/
     top:25px;
     bottom:0px;
@@ -34,13 +34,13 @@
 }
 
 /* search sidebar */
-#GnuBookSearch {
+.GnuBookSearch {
     border:1px solid black;
     position:absolute;
     background-color: #625E25;    
 }
 
-#GnuBookSearchResults {
+.GnuBookSearchResults {
     background-color: #f8f8f8;  
     top: 25px;
     bottom: 0px;
