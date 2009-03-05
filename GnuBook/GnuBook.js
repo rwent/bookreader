@@ -733,7 +733,13 @@ GnuBook.prototype.prepareOnePageView = function() {
 GnuBook.prototype.prepareTwoPageView = function() {
     this.getContainerDiv().empty();
 
-    var firstLeaf = this.displayedLeafs[0];
+	if (this.firstIndex || (this.firstIndex === 0)) {
+		var firstLeaf = this.firstIndex;
+		this.firstIndex = null;
+		console.log("firstLeaf taken from firstIndex");
+	} else {
+	    var firstLeaf = this.displayedLeafs[0];
+	}
     console.log("firstLeaf="+firstLeaf+" "+this.getPageSide(firstLeaf));
     if ('R' == this.getPageSide(firstLeaf)) {
         if (0 == firstLeaf) {
