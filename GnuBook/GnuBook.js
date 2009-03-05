@@ -150,6 +150,7 @@ GnuBook.prototype.init = function() {
     this.getBaseDiv().append("<div class='GBtoolbar'><span style='float:left;'><button class='GBicon' id='zoom_out' onclick='"+this.gbGlobalName()+".zoomButtonHandler(-1); return false;'/> <button class='GBicon' id='zoom_in' onclick='"+this.gbGlobalName()+".zoomButtonHandler(1); return false;'/> zoom: <span class='GBzoom'>25</span>% <button class='GBicon' id='script' onclick='"+this.gbGlobalName()+".onePageButtonHandler(); return false;'/> <button class='GBicon' id='book_open' onclick='"+this.gbGlobalName()+".twoPageButtonHandler(); return false;'/>  &nbsp;&nbsp; <a href='"+this.bookUrl+"' target='_blank'>"+title+"</a></span></div>");
     this.getElement(".GBtoolbar").append("<span class='GBtoolbarbuttons' style='float: right'><button class='GBicon' id='page_code' onclick='"+this.gbGlobalName()+".showEmbedCode(); return false;'/><form class='GBpageform' action='javascript:' onsubmit='"+this.gbGlobalName()+".jumpToPage(this.elements[0].value)'> page:<input class='GBpagenum' type='text' size='3' onfocus='"+this.gbGlobalName()+".autoStop();'></input></form> <button class='GBicon' id='book_previous' onclick='"+this.gbGlobalName()+".prev(); return false;'/> <button class='GBicon' id='book_next' onclick='"+this.gbGlobalName()+".next(); return false;'/> <button class='GBicon autoImg play' onclick='"+this.gbGlobalName()+".autoToggle(); return false;'/></span>");
     this.getBaseDiv().append("<div class='GBcontainer'></div>");
+    this.addSymmetricPageTurningClickHandler(this.getContainerDiv());
     this.addGBpageview();
 
     this.getContainerDiv().bind('scroll', this, function(e) {
@@ -1770,4 +1771,20 @@ GnuBook.prototype.addGBpageview = function() {
 		console.log('GBpageview clicked');
 		e.data.switchMode(2);
 	});	
+}
+
+// addSymmetricPageTurningClickHandler()
+//______________________________________________________________________________
+GnuBook.prototype.addSymmetricPageTurningClickHandler = function(element) {
+	var self = this;
+	element.click(function(e) {
+		if (self.mode == 2) {
+        	self.autoStop();
+			if (e.pageX > $(this).width()/2) {
+				self.flipFwdToIndex(null);  // turn page forward
+			} else {
+	        	self.flipBackToIndex(null);	// turn page backward
+			}
+		}
+	});
 }
