@@ -69,17 +69,28 @@ function GnuBook() {
     this.autoTimer = null;
     this.flipSpeed = 'fast';
 
-    this.twoPagePopUp = null;
+    this.twoPageEdgePopUp = null;
     this.leafEdgeTmp  = null;
     this.embedPopup = null;
     
     this.searchResults = {};
     
     this.firstIndex = null;
-    
+    this.debug = false;
 };
 // Instance-distinguishing suffix to be used for next-created GnuBook instance
 GnuBook.nextInstanceSuffix = ''
+
+// log() 
+//  - log message to console subject to setting of this.debug
+//  - even when debug is false, incurs overhead of constructing message,
+//    which might matter inside a loop
+//______________________________________________________________________________
+GnuBook.prototype.log = function(msg) {
+	if (this.debug) {
+		console.log(msg);
+	}
+};
 
 // getBaseDivId() - ID of DIV within which GnuBook instance lives
 //______________________________________________________________________________
@@ -503,7 +514,7 @@ GnuBook.prototype.zoomButtonHandler = function(dir) {
         		//var focusPageX = focusPageViewX - (clientWidth - this.getScaledPageWidth(i))/2;
         		var focusPageX = focusPageViewX - (pageViewWidth - this.getScaledPageWidth(i))/2;
         		this.zoomFocus.horiz = this.ensureInRange( parseInt(1000*focusPageX/this.getScaledPageWidth(i)), 0, 1000);
-        		console.log("Center is "+this.zoomFocus);
+        		this.log("zoomButtonHandler: Center is "+this.zoomFocus);
         		break;
         	}
     	}
@@ -721,7 +732,7 @@ GnuBook.prototype.prepareOnePageView = function() {
 
     this.resizePageView();
     if (! this.zoomFocus) {
-    	console.log("startLeaf="+startLeaf);
+    	this.log("prepareOnePageView: startLeaf="+startLeaf);
     	this.jumpToIndex(startLeaf);
     }
     this.displayedLeafs = [];    
@@ -737,11 +748,11 @@ GnuBook.prototype.prepareTwoPageView = function() {
 	if (this.firstIndex || (this.firstIndex === 0)) {
 		var firstLeaf = this.firstIndex;
 		this.firstIndex = null;
-		console.log("firstLeaf taken from firstIndex");
+		this.log("prepareTwoPageView: firstLeaf taken from firstIndex");
 	} else {
 	    var firstLeaf = this.displayedLeafs[0];
 	}
-    console.log("firstLeaf="+firstLeaf+" "+this.getPageSide(firstLeaf));
+    this.log("prepareTwoPageView: firstLeaf="+firstLeaf+" "+this.getPageSide(firstLeaf));
     if ('R' == this.getPageSide(firstLeaf)) {
         if (0 == firstLeaf) {
             firstLeaf++;
@@ -749,7 +760,6 @@ GnuBook.prototype.prepareTwoPageView = function() {
             firstLeaf--;
         }
     }
-    console.log("firstLeaf="+firstLeaf);
 
     this.currentLeafL = null;
     this.currentLeafR = null;
@@ -850,7 +860,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
     divTop = (this.getContainerDiv().height() - divHeight) >> 1;
 
 
-    this.prepareTwoPagePopUp();
+    this.preparePageEdgePopUp();
 
     this.displayedLeafs = [];
     //this.leafsToDisplay=[firstLeaf, firstLeaf+1];
@@ -862,15 +872,15 @@ GnuBook.prototype.prepareTwoPageView = function() {
     this.getElement('.GBzoom').text((100*this.twoPageH/this.getPageHeight(firstLeaf)).toString().substr(0,4));
 }
 
-// prepareTwoPagePopUp()
+// preparePageEdgePopUp()
 //
 // This function prepares the "View leaf n" popup that shows while the mouse is
 // over the left/right "stack of sheets" edges.  It also binds the mouse
 // events for these divs.
 //______________________________________________________________________________
-GnuBook.prototype.prepareTwoPagePopUp = function() {
-    this.twoPagePopUp = document.createElement('div');
-    $(this.twoPagePopUp).css({
+GnuBook.prototype.preparePageEdgePopUp = function() {
+    this.twoPageEdgePopUp = document.createElement('div');
+    $(this.twoPageEdgePopUp).css({
         border: '1px solid black',
         padding: '2px 6px',
         position: 'absolute',
@@ -880,14 +890,14 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
         backgroundColor: 'rgb(255, 255, 238)',
         opacity: 0.85
     }).appendTo(this.getElementSelector('.GBcontainer'));
-    $(this.twoPagePopUp).hide();
+    $(this.twoPageEdgePopUp).hide();
     
     $(this.leafEdgeL).add(this.leafEdgeR).bind('mouseenter', this, function(e) {
-        $(e.data.twoPagePopUp).show();
+        $(e.data.twoPageEdgePopUp).show();
     });
 
     $(this.leafEdgeL).add(this.leafEdgeR).bind('mouseleave', this, function(e) {
-        $(e.data.twoPagePopUp).hide();
+        $(e.data.twoPageEdgePopUp).hide();
     });
 
     $(this.leafEdgeL).bind('click', this, function(e) { 
@@ -912,9 +922,9 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
 
         var jumpLeaf = e.data.currentLeafR + (e.pageX - $(e.data.leafEdgeR).offset().left) * 10;
         jumpLeaf = Math.min(jumpLeaf, e.data.numLeafs-1);        
-        $(e.data.twoPagePopUp).text('View Leaf '+jumpLeaf);
+        $(e.data.twoPageEdgePopUp).text('View Leaf '+jumpLeaf);
         
-        $(e.data.twoPagePopUp).css({
+        $(e.data.twoPageEdgePopUp).css({
             left: e.pageX +5+ 'px',
             top: e.pageY-e.data.getContainerDiv().offset().top+ 'px'
         });
@@ -923,10 +933,10 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
     $(this.leafEdgeL).bind('mousemove', this, function(e) {
         var jumpLeaf = e.data.currentLeafL - ($(e.data.leafEdgeL).offset().left + $(e.data.leafEdgeL).width() - e.pageX) * 10;
         jumpLeaf = Math.max(jumpLeaf, 0);
-        $(e.data.twoPagePopUp).text('View Leaf '+jumpLeaf);
+        $(e.data.twoPageEdgePopUp).text('View Leaf '+jumpLeaf);
         
-        $(e.data.twoPagePopUp).css({
-            left: e.pageX - $(e.data.twoPagePopUp).width() - 30 + 'px',
+        $(e.data.twoPageEdgePopUp).css({
+            left: e.pageX - $(e.data.twoPageEdgePopUp).width() - 30 + 'px',
             top: e.pageY-e.data.getContainerDiv().offset().top+ 'px'
         });
     });
@@ -1750,7 +1760,7 @@ GnuBook.prototype.focusOfEvent = function(pageDiv, leafNum, e) {
             		'leafNum': leafNum,
             		'horiz': parseInt(1000*(e.pageX - jqPageDiv.offset().left)/jqPageDiv.width()),
             		'vert':  parseInt(1000*(e.pageY - jqPageDiv.offset().top)/jqPageDiv.height()) });
-    console.log("Focus of event = "+focus);
+    this.log("Focus of event = "+focus);
     return focus;
 }
 
@@ -1758,7 +1768,7 @@ GnuBook.prototype.focusOfEvent = function(pageDiv, leafNum, e) {
 //______________________________________________________________________________
 GnuBook.prototype.clearZoomFocus = function() {
 	this.zoomFocus = null;
-	console.log("Clear zoomFocus");
+	this.log("Clear zoomFocus");
 }
 
 // addGBpageview()
@@ -1768,7 +1778,7 @@ GnuBook.prototype.addGBpageview = function() {
     this.getContainerDiv().append("<div class='GBpageview'></div>");
 
 	this.getElement('.GBpageview').bind('click', this, function(e) {
-		console.log('GBpageview clicked');
+		e.data.log('GBpageview clicked');
 		e.data.switchMode(2);
 	});	
 }
