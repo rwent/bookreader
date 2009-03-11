@@ -35,6 +35,24 @@ gb.getPageSide = function(index) {
     }
 }
 
+// Return two-element array with the indices of the leafs to be displayed in two-page spread
+// given one of the indices.
+gb.getSpreadIndices = function(pindex) {
+
+	var spreadIndices = [];
+	// Following is correct for left to right book
+	if (this.getPageSide(pindex) == 'L') {
+		spreadIndices[0] = pindex;
+		spreadIndices[1] = pindex + 1;
+	} else {
+		// Given index was RHS
+		spreadIndices[1] = pindex;
+		spreadIndices[0] = pindex - 1;
+	}
+    
+    return spreadIndices;
+}
+
 // For a given "accessible page index" return the page number in the book.
 //
 // For example, index 5 might correspond to "Page 1" if there is front matter such

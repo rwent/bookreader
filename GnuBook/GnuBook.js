@@ -29,6 +29,7 @@ This file is part of GnuBook.
 //  - getPageHeight()	
 //  - getPageURI()
 //  - getPageSide()
+//  - getSpreadIndices()
 //  - getPageNum()
 // You must also add these properties, before calling init():
 //  - numLeafs
@@ -2139,12 +2140,4 @@ GnuBook.prototype.lastDisplayableIndex = function() {
     } else {
         return this.numLeafs - 1;
     }
-}
-
-// getSpreadIndices
-// $$$$$$$$ DUMMY FUNCTION SINCE FUNCTION WAS MISSING FROM CODE IN GitHub
-//______________________________________________________________________________
-GnuBook.prototype.getSpreadIndices = function(targetLeaf) {
-	var startLeaf = ((targetLeaf >> 1) << 1);
-	return [startLeaf, startLeaf+1];
 }
